@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["ES2019.Object", "ES2019", "DOM"]
+  }
+}

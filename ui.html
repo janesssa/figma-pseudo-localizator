@@ -1,0 +1,158 @@
+<style>
+  *{
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    outline: none;
+  }
+
+  body {
+    justify-content: center;
+  }
+
+  input {
+    width: 289px;
+    padding: 5px;
+    border: none;
+    border-bottom: 1px solid grey;
+    margin: 5px 0;
+  }
+
+  section {
+    margin: 10px 0;
+  }
+
+  button {
+    margin: 5px;
+    padding: 12px;
+    min-height: 40px;
+    min-width: 86px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: all 150ms linear;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 14px;
+
+    background-color: #416dea;
+    color: #fff;
+    border: 0 none;
+    border-radius: 4px;
+  
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 160px;
+    
+    box-shadow: 2px 3px 7px #e4e4e4;
+  }
+
+  button:hover {
+    transition: all 150ms linear;
+    opacity: .85;
+  }
+
+  .cancel {
+    background-color: #F32C52;
+  }
+
+  .start:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: red;
+    width: 0%;
+    height: 100%;
+    z-index: -1;
+    transition: width 0.5s;
+  }
+
+  div{
+    font-size: 8px;
+    height: 10px;
+    border-radius: 4px;
+  }
+
+  .count {
+    margin: 5px;
+    width: 289px;
+  }
+
+  .progress{
+    z-index: 1;
+  }
+</style>
+<h2>Language Checker</h2>
+<p>Click start and the text in your document will change dynammically.</p>
+<hr>
+<input id="input" type="number" placeholder="140%"></input>
+<section>
+  <button id="start" class="start">Start</button>
+  <button id="revert">Revert</button>
+  <button id="cancel" class="cancel">Cancel</button>
+</section>
+<div id="count" class="count"> 
+  <div id="progress" class="progress"></div>
+</div>
+<script>
+
+const input = document.getElementById('input')
+const count = document.getElementById('count')
+const progress = document.getElementById('progress')
+const start = document.getElementById('start')
+const revert = document.getElementById('revert')
+const cancel = document.getElementById('cancel')
+const before = window.getComputedStyle(start, ':before')
+
+start.dataset.content = '0%'
+
+start.onclick = () => {
+  if(input.value){
+    input.style.border = 'none'
+    input.style.borderBottom = '1px solid grey'
+    parent.postMessage({ pluginMessage: { type: 'start', options: { input : input.value } } }, '*')
+  } else {
+    input.style.border = '1px solid red'
+  }
+}
+
+revert.onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'revert' } }, '*')
+}
+
+cancel.onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+}
+
+onmessage = (e) => {
+  var msg = event.data.pluginMessage
+  switch (msg.type) {
+    case 'start': 
+      console.log('start', count.innerHTML, count.outerHTML)
+      debugger
+      count.innerHTML += 'They see me loading... <div id="progress" class="progress"></div>'
+      // start.style.backgroundColor = '#fff'
+      // setTimeout(() => {start.style.color = '#416dea'}, 200)
+    case 'update':
+      // start.style.color = '#fff'
+      // before.setAttribute('width', `${msg.options.current}%`)
+      count.style.background = 'lightgrey'
+      count.style.boxShadow = '1px 2px 5px #e4e4e4'
+      progress.style.background = '#416dea'
+      progress.style.width = `${msg.options.current}%`
+      progress.innerHTML = msg.options.html
+      count.innerHTML = progress.outerHTML
+      console.log('update', count.innerHTML, count.outerHTML, progress.outerHTML)
+      break
+    case 'stop':
+      let deleteOnce = false 
+      if(!deleteOnce){
+        count.outerHTML = '<div id="count" class="count"><div id="progress" class="progress"></div></div>'
+        deleteOnce = true
+      }
+      console.log('stop', count.innerHTML, count.outerHTML)
+      break
+  }
+}
+
+</script>
