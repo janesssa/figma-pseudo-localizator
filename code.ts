@@ -1,8 +1,9 @@
-figma.showUI(__html__, { width: 320, height: 240});
+figma.showUI(__html__, { width: 320, height: 220});
 
+const cachedNodes = {}
 const originalNodes = {}
 const newNodes = {}
-let totalNodes = 0
+let reverted = false
 
 const getTextNodes = (selection, percentage) => {
   let id = 0;
@@ -14,6 +15,7 @@ const getTextNodes = (selection, percentage) => {
     }
     else {
       if (node.type === 'TEXT' && node.characters !== undefined && node.characters.length < 100) {
+        cachedNodes[id] = { node: node }
         originalNodes[id] = { ...node, characters: node.characters, fontName: node.fontName }
         id++
       }
@@ -21,8 +23,7 @@ const getTextNodes = (selection, percentage) => {
   }
   selection.forEach(item => childrenIterator(item))
 
-  totalNodes = Object.keys(originalNodes).length - 1
-  startProgress()
+  startProgress('start')
   changeText({...originalNodes}, percentage)
 }
 
@@ -44,10 +45,9 @@ const changeText = (node, percentage) => {
           characters: newText
         }
       })
+      revertText(key, newNodes)
     }
   })
-
-  setTimeout(() => replaceText(newNodes, figma.currentPage.children), 1000) // Todo --- This is a bad fix
 }
 
 const pseudoText = (text) => {
@@ -115,63 +115,22 @@ const pseudoText = (text) => {
   return after
 }
 
-const replaceText = async (obj, selection) => {
-  function childrenIterator(node) {
-    if (node.children) {
-      node.children.forEach(child => {
-        childrenIterator(child)
-      })
-    } else {
-      if (node.type === 'TEXT' && node.characters !== undefined && node.characters.length < 100) {
-        Object.keys(obj).forEach(id => {
-          if(obj[id].id === node.id){
-            node.characters = obj[id].characters
-            updateProgress(Object.keys(obj)[id])
-          }
-        })
-      }
-    }
-  }
-  if(Object.entries(obj).length > 0) await selection.forEach(item => childrenIterator(item))
-  setTimeout(() => stopProgress(), 1000)
+const revertText = (key, obj) => {
+  cachedNodes[key].node.characters = obj[key].characters
 }
 
-const revertText = async (obj, selection) => {
-  function childrenIterator(node) {
-    if (node.children) {
-      node.children.forEach(child => {
-        childrenIterator(child)
-      })
-    } else {
-      if (node.type === 'TEXT' && node.characters !== undefined && node.characters.length < 100) {
-        Object.keys(obj).forEach(id => {
-          if(obj[id].id === node.id){
-            node.characters = obj[id].characters
-          }
-        })
-      }
-    }
-  }
-  if(Object.entries(obj).length > 0) await selection.forEach(item => childrenIterator(item))
-  setTimeout(() => stopProgress(), 1000)
-}
-
-const startProgress = () => {
-  let message = { type: 'start', options: { total: totalNodes } }
+const startProgress = (tag) => {
+  let message = { type: 'start', options: { tag: tag } }
   figma.ui.postMessage(message)
 }
 
-const updateProgress = (currentNode) => {
-  let progress = (currentNode / totalNodes) * 100 
-  let html = currentNode + '/' + totalNodes
-  if(totalNodes === currentNode) setTimeout(() => stopProgress(), 500)
-  debugger
-  let message = { type: 'update', options: { current: progress, html: html } }
+const blinkButton = (tag) => {
+  let message = { type: 'blink', options: { tag: tag } }
   figma.ui.postMessage(message)
 }
 
-const stopProgress = () => {
-  let message = { type: 'stop' }
+const stopProgress = (tag) => {
+  let message = { type: 'stop', options: { tag: tag } }
   figma.ui.postMessage(message)
 }
 
@@ -180,27 +139,26 @@ figma.ui.onmessage = msg => {
     case 'start': {
       let percentage = msg.options.input / 100
       getTextNodes(figma.currentPage.children, percentage)
+      reverted = false
       break
     }
     case 'revert': {
       let alertOnce = false
       let message = 'Caution! There is nothing to revert.'
-      debugger
+      reverted = true
       if(Object.keys(originalNodes).length === 0 || Object.keys(newNodes).length === 0){
         alert(message)
       } else {
+        startProgress('revert')
+        stopProgress('start')
         Object.keys(originalNodes).forEach(key => {
-          console.log('inside first loop',key)
-          startProgress()
           if(originalNodes[key].characters === newNodes[key].characters){
             if(!alertOnce){
               alert('Caution! There is nothing to revert.')
               alertOnce = true
             } 
           } else {
-            console.log('inside second if')
-            updateProgress(key)
-            revertText(originalNodes, figma.currentPage.children)
+            revertText(key, originalNodes)
           }
         })
       }
@@ -208,11 +166,14 @@ figma.ui.onmessage = msg => {
     }
     case 'cancel': {
       let alertOnce = false
+      stopProgress('revert')
+      stopProgress('start')
+      debugger
       Object.keys(originalNodes).forEach(key => {
-        if(originalNodes[key].characters === newNodes[key].characters){
+        if(!reverted){
           if(!alertOnce){
+            blinkButton('revert')
             alert('Caution! Your text is not reverted yet.')
-            stopProgress()
             alertOnce = true
           } 
         } else {
