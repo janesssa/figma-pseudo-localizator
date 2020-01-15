@@ -9,12 +9,28 @@
     justify-content: center;
   }
 
+  .range-container {
+    width: 294px;
+    display: flex;
+    margin: 2px;
+    justify-content: space-between;
+  }
+
+  .label {
+    font-size: 8px;
+    /* width: 58.8px; */
+    text-align: center;
+  }
+
+  .label:last-child {
+    text-align: end;
+  }
+  .label:first-child {
+    text-align: start;
+  }
+
   input {
-    width: 289px;
-    padding: 5px;
-    border: none;
-    border-bottom: 1px solid grey;
-    margin: 5px;
+    width: 294px;
   }
 
   section {
@@ -69,7 +85,39 @@
 <h2>Pseudo Localization</h2>
 <p>Click start and the text in your document will change dynammically.</p>
 <hr>
-<input id="input" type="number" placeholder="140%"></input>
+<div class="range-container">
+  <p class="label">50%</p>
+  <p class="label">75%</p>
+  <p class="label">100%</p>
+  <p class="label">125%</p>
+  <p class="label">150%</p>
+</div>
+
+  <input id="input" type="range" list="tickmarks" min="50" max="150" step="5">
+  <datalist id="tickmarks">
+    <option value="50" label="50%"></option>
+    <option value="55"></option>
+    <option value="60"></option>
+    <option value="65"></option>
+    <option value="70"></option>
+    <option value="75" label="75%"></option>
+    <option value="80"></option>
+    <option value="85"></option>
+    <option value="90"></option>
+    <option value="95"></option>
+    <option value="100" label="100%"></option>
+    <option value="105"></option>
+    <option value="110"></option>
+    <option value="115"></option>
+    <option value="120"></option>
+    <option value="125" label="125%"></option>
+    <option value="130"></option>
+    <option value="135"></option>
+    <option value="140"></option>
+    <option value="145"></option>
+    <option value="150" label="150%"></option>
+  </datalist>
+
 <section>
   <button id="start" class="start">Start</button>
   <button id="revert">Revert</button>
@@ -81,12 +129,18 @@ const input = document.getElementById('input')
 const start = document.getElementById('start')
 const revert = document.getElementById('revert')
 const cancel = document.getElementById('cancel')
+let value 
+
+input.onchange = () => {
+  value = input.value
+  console.log(value, input.value)
+}
 
 start.onclick = () => {
-  if(input.value){
+  if(value){
     input.style.border = 'none'
     input.style.borderBottom = '1px solid grey'
-    parent.postMessage({ pluginMessage: { type: 'start', options: { input : input.value } } }, '*')
+    parent.postMessage({ pluginMessage: { type: 'start', options: { input : value } } }, '*')
   } else {
     input.style.border = '1px solid red'
   }

@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 320, height: 220});
+figma.showUI(__html__, { width: 320, height: 240});
 
 const cachedNodes = {}
 const originalNodes = {}
