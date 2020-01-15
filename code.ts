@@ -24,19 +24,22 @@ const getTextNodes = (selection, percentage) => {
   selection.forEach(item => childrenIterator(item))
 
   startProgress('start')
+  stopProgress('revert')
   changeText({...originalNodes}, percentage)
 }
 
 const changeText = (node, percentage) => {
-  const extraText = ' Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vulputate, nisl vitae volutpat pulvinar, ipsum est auctor risus, ut semper purus nunc et magna. Nulla facilisi. Vestibulum quis condimentum magna.'
+  const extraText = 'DoNec A VeSTIBuLUM erat. mAuRis sED Orci loREm. DoNEc mAXImUs LAciNiA poSUERE. mAURis diCtuM, PuRus qUiS ALIqUAM vehicULA, ArCu loREm iNTErDUM ElIt, A ConsEctEtUr NullA NISI Et QUaM. FUScE lOBorTIS VOLuTPAT fRinGILLa. PrOIN alIqUEt aT iPSuM sagitTIs CoNdimeNTUm. vIvamUS NEc ANte EU tuRPIS VArIUS ALIquEt. NuLLa EUiSmOd loBOrTiS ARCu, Et PHaRETRA ENIm SEMPEr Eu. PrOin In FrinGilla aRcu, qUis FeuGiAt dUI. suspendiSsE LucTus pOrtA nIsL, NeC VEHiCULa lOreM TeMpUS aT. inTeRduM Et mALesuadA fAmeS ac AnTE IPsum PRIMIS iN FAUCibUs. prAeseNT odIO DOlor, cuRsus EU fauCibuS vEL, VulPutaTE In DoLor. inTeger maxIMUs loreM VOLUTPAt GrAVIDa ullAmCOrPeR. PhaSELlUs EU fELis ARCu. nULLaM VolUtPAt NUnc TiNCiDuNT VehicuLa varIus. aeNeaN ImPErDiet qUAM Eget DuI ORnarE PELleNTesQUe. qUIsque Semper leo AT phaReTrA IaCUlis. sUSPEnDIsSe RutruM, LectUs ac PHAreTRA FRInGiLLA, NUlLA leo FInIBus UrNA, Ut frINgiLla NibH DuI ULTRIceS mEtuS. pellENtEsQue vitAE VArIUs neQUE. ViVaMus fRInGILla Ex SEd est gRaviDA consEquAt. dUis matTIS UT Mi seD DiGNiSSIm. PellenTESqUE viTae NISi SiT amET ODIo sEmPeR voLUtPaT. dUis scElERiSque, FElIs A alIQuEt CondImeNtUM, meTUs enIM sCeLErISQUe ODiO, PULVINAr iMPErDIeT pURus NunC iN leCtUs. CUrAbITUr Sit amET CUrSUS lorEM, IN HEndReRIt ODio. PHaSELluS VOLUtpat posuere QuAm Ut BlAndIT. VEstIBuLum PORTtitOR RISUS LeO, Ac SCelerIsQUe SEm lUCtUs NOn. moRBi QUiS Ante ut DoLor UltRiciEs GrAVIda EGet eGet TellUs. aLIQUam DiCtuM vEhiculA TURPIs, ET BLAndIT toRtoR tINcIDunT Sed. eTIAM TiNcIdUnt moLeSTIE EnIm UT cOnVAllIS. nuLlaM EFFiCituR vestiBuLUM TOrtOr, ac inTErDum auguE TiNciDUnT eGet. Ut cOnDImenTum Nisl ENIm, aT ViveRra NulLa CoNGuE A. PeLlENteSQUe EU EfficItUR auGUe.'
   let id = -1
   Object.keys(node).forEach(async (key) => {
     let characters = node[key].characters
     let fontName = node[key].fontName
     let uid = node[key].id
-    const length = Math.ceil(characters.length * percentage) - characters.length
-    const addText = characters + extraText.slice(0, length)
+    const length = Math.ceil(characters.length * percentage) 
+    const random = Math.ceil(Math.random() * (extraText.length - length)) 
+    const addText = extraText.slice(random, random + length)
     const newText = pseudoText(addText)
+    debugger
     if (fontName != figma.mixed) {
       await figma.loadFontAsync(fontName).then(() => {
         id++

@@ -66,7 +66,7 @@
     }
   }
 </style>
-<h2>Language Checker</h2>
+<h2>Pseudo Localization</h2>
 <p>Click start and the text in your document will change dynammically.</p>
 <hr>
 <input id="input" type="number" placeholder="140%"></input>
@@ -109,13 +109,15 @@ onmessage = (e) => {
     case 'start': 
       tag.style.backgroundColor = '#fff'
       tag.style.color = '#416dea'
+      tag.style.animation = 'none'
       break
     case 'blink': 
-      revert.style.animation = 'blinker 2s linear infinite'
+      tag.style.animation = 'blinker 2s linear infinite'
       break
     case 'stop':
       tag.style.backgroundColor = '#416dea'
       tag.style.color = '#fff'
+      tag.style.animation = 'none'
       break
   }
 }
