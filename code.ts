@@ -38,7 +38,6 @@ const changeText = (node, percentage) => {
   let id = -1
   Object.keys(node).forEach(async (key) => {
     let characters = originalNodes[key].characters
-    let fontName = node[key].fontName
     let uid = node[key].id
     const length = Math.ceil(characters.length * percentage) 
     const random = Math.ceil(Math.random() * (extraText.length - length)) 
