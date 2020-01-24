@@ -28,3 +28,7 @@ Some guidelines for text expansion/contraction can be found below. Keep in my mi
 
 
 <!-- Todo --- Add roadmap -->
+
+### Credits
+
+Based on [an article](https://medium.com/netflix-techblog/pseudo-localization-netflix-12fff76fbcbe) of the Netflix techblog.
