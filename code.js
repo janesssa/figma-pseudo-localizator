@@ -7,10 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-figma.showUI(__html__, { width: 320, height: 220 });
+figma.showUI(__html__, { width: 320, height: 180 });
 const cachedNodes = {};
 const originalNodes = {};
+const nodes = {};
 const newNodes = {};
+let original = false;
+let alertOnceFont = false;
 let reverted = false;
 const getTextNodes = (selection, percentage) => {
     let id = 0;
@@ -21,40 +24,39 @@ const getTextNodes = (selection, percentage) => {
             });
         }
         else {
-            if (node.type === 'TEXT' && node.characters !== undefined && node.characters.length < 100) {
+            if (node.type === 'TEXT' && node.characters !== undefined) {
+                if (!original) {
+                    originalNodes[id] = Object.assign(Object.assign({}, node), { characters: node.characters });
+                }
                 cachedNodes[id] = { node: node };
-                originalNodes[id] = Object.assign(Object.assign({}, node), { characters: node.characters, fontName: node.fontName });
+                nodes[id] = Object.assign(Object.assign({}, node), { characters: node.characters, fontName: node.fontName });
                 id++;
             }
         }
     }
     selection.forEach(item => childrenIterator(item));
-    startProgress('start');
-    stopProgress('revert');
-    changeText(Object.assign({}, originalNodes), percentage);
+    changeText(nodes, percentage);
 };
 const changeText = (node, percentage) => {
+    original = true;
     const extraText = 'DoNec A VeSTIBuLUM erat. mAuRis sED Orci loREm. DoNEc mAXImUs LAciNiA poSUERE. mAURis diCtuM, PuRus qUiS ALIqUAM vehicULA, ArCu loREm iNTErDUM ElIt, A ConsEctEtUr NullA NISI Et QUaM. FUScE lOBorTIS VOLuTPAT fRinGILLa. PrOIN alIqUEt aT iPSuM sagitTIs CoNdimeNTUm. vIvamUS NEc ANte EU tuRPIS VArIUS ALIquEt. NuLLa EUiSmOd loBOrTiS ARCu, Et PHaRETRA ENIm SEMPEr Eu. PrOin In FrinGilla aRcu, qUis FeuGiAt dUI. suspendiSsE LucTus pOrtA nIsL, NeC VEHiCULa lOreM TeMpUS aT. inTeRduM Et mALesuadA fAmeS ac AnTE IPsum PRIMIS iN FAUCibUs. prAeseNT odIO DOlor, cuRsus EU fauCibuS vEL, VulPutaTE In DoLor. inTeger maxIMUs loreM VOLUTPAt GrAVIDa ullAmCOrPeR. PhaSELlUs EU fELis ARCu. nULLaM VolUtPAt NUnc TiNCiDuNT VehicuLa varIus. aeNeaN ImPErDiet qUAM Eget DuI ORnarE PELleNTesQUe. qUIsque Semper leo AT phaReTrA IaCUlis. sUSPEnDIsSe RutruM, LectUs ac PHAreTRA FRInGiLLA, NUlLA leo FInIBus UrNA, Ut frINgiLla NibH DuI ULTRIceS mEtuS. pellENtEsQue vitAE VArIUs neQUE. ViVaMus fRInGILla Ex SEd est gRaviDA consEquAt. dUis matTIS UT Mi seD DiGNiSSIm. PellenTESqUE viTae NISi SiT amET ODIo sEmPeR voLUtPaT. dUis scElERiSque, FElIs A alIQuEt CondImeNtUM, meTUs enIM sCeLErISQUe ODiO, PULVINAr iMPErDIeT pURus NunC iN leCtUs. CUrAbITUr Sit amET CUrSUS lorEM, IN HEndReRIt ODio. PHaSELluS VOLUtpat posuere QuAm Ut BlAndIT. VEstIBuLum PORTtitOR RISUS LeO, Ac SCelerIsQUe SEm lUCtUs NOn. moRBi QUiS Ante ut DoLor UltRiciEs GrAVIda EGet eGet TellUs. aLIQUam DiCtuM vEhiculA TURPIs, ET BLAndIT toRtoR tINcIDunT Sed. eTIAM TiNcIdUnt moLeSTIE EnIm UT cOnVAllIS. nuLlaM EFFiCituR vestiBuLUM TOrtOr, ac inTErDum auguE TiNciDUnT eGet. Ut cOnDImenTum Nisl ENIm, aT ViveRra NulLa CoNGuE A. PeLlENteSQUe EU EfficItUR auGUe.';
     let id = -1;
     Object.keys(node).forEach((key) => __awaiter(this, void 0, void 0, function* () {
-        let characters = node[key].characters;
+        let characters = originalNodes[key].characters;
         let fontName = node[key].fontName;
         let uid = node[key].id;
         const length = Math.ceil(characters.length * percentage);
         const random = Math.ceil(Math.random() * (extraText.length - length));
-        const addText = extraText.slice(random, random + length);
+        let addText = extraText.slice(random, random + length);
+        if (addText.slice(0, 1) === ' ')
+            addText = extraText.slice(random + 1, random + length + 1);
         const newText = pseudoText(addText);
-        debugger;
-        if (fontName != figma.mixed) {
-            yield figma.loadFontAsync(fontName).then(() => {
-                id++;
-                return newNodes[id] = {
-                    id: uid,
-                    characters: newText
-                };
-            });
-            revertText(key, newNodes);
-        }
+        id++;
+        newNodes[id] = {
+            id: uid,
+            characters: newText
+        };
+        revertText(key, newNodes);
     }));
 };
 const pseudoText = (text) => {
@@ -228,38 +230,34 @@ const pseudoText = (text) => {
     return after;
 };
 const revertText = (key, obj) => {
-    cachedNodes[key].node.characters = obj[key].characters;
-};
-const startProgress = (tag) => {
-    let message = { type: 'start', options: { tag: tag } };
-    figma.ui.postMessage(message);
-};
-const blinkButton = (tag) => {
-    let message = { type: 'blink', options: { tag: tag } };
-    figma.ui.postMessage(message);
-};
-const stopProgress = (tag) => {
-    let message = { type: 'stop', options: { tag: tag } };
-    figma.ui.postMessage(message);
+    let fontName = cachedNodes[key].node.fontName;
+    if (fontName != figma.mixed) {
+        figma.loadFontAsync(fontName).then(() => {
+            cachedNodes[key].node.characters = obj[key].characters;
+        });
+    }
+    else {
+        if (!alertOnceFont) {
+            alert('We cannot replace mixed font texts.');
+            alertOnceFont = true;
+        }
+    }
 };
 figma.ui.onmessage = msg => {
     switch (msg.type) {
         case 'start': {
             let percentage = msg.options.input / 100;
             getTextNodes(figma.currentPage.children, percentage);
-            reverted = false;
+            debugger;
             break;
         }
         case 'revert': {
             let alertOnce = false;
             let message = 'Caution! There is nothing to revert.';
-            reverted = true;
             if (Object.keys(originalNodes).length === 0 || Object.keys(newNodes).length === 0) {
                 alert(message);
             }
             else {
-                startProgress('revert');
-                stopProgress('start');
                 Object.keys(originalNodes).forEach(key => {
                     if (originalNodes[key].characters === newNodes[key].characters) {
                         if (!alertOnce) {
@@ -269,28 +267,18 @@ figma.ui.onmessage = msg => {
                     }
                     else {
                         revertText(key, originalNodes);
+                        reverted = true;
                     }
                 });
             }
             break;
         }
-        case 'cancel': {
-            let alertOnce = false;
-            stopProgress('revert');
-            stopProgress('start');
-            debugger;
-            Object.keys(originalNodes).forEach(key => {
-                if (!reverted) {
-                    if (!alertOnce) {
-                        blinkButton('revert');
-                        alert('Caution! Your text is not reverted yet.');
-                        alertOnce = true;
-                    }
-                }
-                else {
-                    figma.closePlugin();
-                }
-            });
-        }
     }
 };
+figma.on('close', () => {
+    if (!reverted) {
+        Object.keys(originalNodes).forEach(key => {
+            revertText(key, originalNodes);
+        });
+    }
+});

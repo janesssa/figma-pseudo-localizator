@@ -2,6 +2,7 @@
   *{
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
+    user-select: none;
     outline: none;
   }
 
@@ -9,40 +10,55 @@
     justify-content: center;
   }
 
-  input {
-    width: 289px;
-    padding: 5px;
-    border: none;
-    border-bottom: 1px solid grey;
-    margin: 5px;
+  .intro {
+    margin-top: -5px;
   }
 
-  section {
-    margin: 10px 0;
+  .range-container {
+    width: 304px;
+    display: flex;
+    margin: 2px;
+    justify-content: space-between;
+  }
+
+  .label-container {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .label {
+    font-size: 8px;
+    text-align: center;
+  }
+  .label:last-child {
+    text-align: end;
+  }
+  .label:first-child {
+    text-align: start;
+  }
+
+  .input-container {
+    width: 200px;
+  }
+
+  input {
+    width: 194px;
   }
 
   button {
     margin: 5px;
     padding: 12px;
-    min-height: 40px;
-    min-width: 86px;
-    position: relative;
+    height: 40px;
+    width: 86px;
     cursor: pointer;
-    user-select: none;
     transition: all 150ms linear;
     text-align: center;
-    white-space: nowrap;
     font-size: 14px;
 
     background-color: #416dea;
     color: #fff;
     border: 0 none;
-    border-radius: 4px;
-  
-    justify-content: center;
-    align-items: center;
-    flex: 0 0 160px;
-    
+    border-radius: 4px;    
     box-shadow: 2px 3px 7px #e4e4e4;
   }
 
@@ -54,72 +70,57 @@
   .cancel {
     background-color: #F32C52;
   }
-
-  @keyframes blinker {
-    0% {
-      background-color: #416dea;
-      color: #fff;
-    }
-    50% {
-      background-color: #fff;
-      color: #416dea;
-    }
-  }
 </style>
 <h2>Pseudo Localization</h2>
-<p>Click start and the text in your document will change dynammically.</p>
+<p class="intro">Adjust the slider and your text will change dynammically</p>
 <hr>
-<input id="input" type="number" placeholder="140%"></input>
-<section>
-  <button id="start" class="start">Start</button>
+<div class="range-container">
+  <div class="input-container">
+    <div class="label-container">
+      <p class="label">50%</p>
+      <p class="label">75%</p>
+      <p class="label">100%</p>
+      <p class="label">125%</p>
+      <p class="label">150%</p>
+    </div>
+    <input id="input" type="range" list="tickmarks" min="50" max="150" step="5">
+    <datalist id="tickmarks">
+      <option value="50" label="50%"></option>
+      <option value="55"></option>
+      <option value="60"></option>
+      <option value="65"></option>
+      <option value="70"></option>
+      <option value="75" label="75%"></option>
+      <option value="80"></option>
+      <option value="85"></option>
+      <option value="90"></option>
+      <option value="95"></option>
+      <option value="100" label="100%"></option>
+      <option value="105"></option>
+      <option value="110"></option>
+      <option value="115"></option>
+      <option value="120"></option>
+      <option value="125" label="125%"></option>
+      <option value="130"></option>
+      <option value="135"></option>
+      <option value="140"></option>
+      <option value="145"></option>
+      <option value="150" label="150%"></option>
+    </datalist>
+  </div>
   <button id="revert">Revert</button>
-  <button id="cancel" class="cancel">Cancel</button>
-</section>
+</div>
 <script>
 
 const input = document.getElementById('input')
-const start = document.getElementById('start')
 const revert = document.getElementById('revert')
-const cancel = document.getElementById('cancel')
 
-start.onclick = () => {
-  if(input.value){
-    input.style.border = 'none'
-    input.style.borderBottom = '1px solid grey'
-    parent.postMessage({ pluginMessage: { type: 'start', options: { input : input.value } } }, '*')
-  } else {
-    input.style.border = '1px solid red'
-  }
+input.onchange = () => {
+  parent.postMessage({ pluginMessage: { type: 'start', options: { input : input.value } } }, '*')
 }
 
 revert.onclick = () => {
   parent.postMessage({ pluginMessage: { type: 'revert' } }, '*')
-}
-
-cancel.onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-}
-
-onmessage = (e) => {
-  let msg = event.data.pluginMessage
-  let tag = msg.options.tag
-  if(tag === 'start') tag = start
-  if(tag === 'revert') tag = revert
-  switch (msg.type) {
-    case 'start': 
-      tag.style.backgroundColor = '#fff'
-      tag.style.color = '#416dea'
-      tag.style.animation = 'none'
-      break
-    case 'blink': 
-      tag.style.animation = 'blinker 2s linear infinite'
-      break
-    case 'stop':
-      tag.style.backgroundColor = '#416dea'
-      tag.style.color = '#fff'
-      tag.style.animation = 'none'
-      break
-  }
 }
 
 </script>
